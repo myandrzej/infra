@@ -1,0 +1,48 @@
+version: '3.3'
+
+networks:
+  bee_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.10.0/24
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - ${PWD}/dbdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: zpi2023
+    networks:
+     bee_net:
+      ipv4_address: 192.168.10.3
+
+  intellij-idea:
+    build: .
+    depends_on:
+     - db
+    volumes:
+     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+     - ${PWD}/IdeaConfig/.android:/root/.android
+     - ${PWD}/IdeaConfig/.cache:/root/.cache
+     - ${PWD}/IdeaConfig/.config:/root/.config
+     - ${PWD}/IdeaConfig/.java:/root/.java
+     - ${PWD}/IdeaConfig/.jdks:/root/.jdks
+     - ${PWD}/IdeaConfig/.local:/root/.local
+     - ${PWD}/IdeaConfig/.m2:/root/.m2
+     - ${PWD}/../IdeaProjects/:/root/IdeaProjects
+     - ${PWD}/../../.gitconfig:/root/.gitconfig
+    environment:
+     - DISPLAY=${DISPLAY}
+    links:
+     - db:db
+    ports:
+      - 8080:8080
+    networks:
+     bee_net:
+      ipv4_address: 192.168.10.2
